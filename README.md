@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/dc63032b-c47f-4628-8ce6-8d1a7e213cfb" width="400" alt="RoseMotion UI Preview" />
+  <img src="https://github.com/user-attachments/assets/2ed71f8c-9a60-41d4-bf2a-79ba50ae38d8" width="400" alt="RoseMotion UI Preview" />
 </p>
 
 
