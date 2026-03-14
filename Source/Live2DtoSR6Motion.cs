@@ -58,6 +58,7 @@ namespace SR6PluginProject
 
         void Awake()
         {
+            Logger.LogInfo($"v{Info.Metadata.Version} 初始化成功！爱来自 aoligeas");
             _menuKey = (KeyCode)PlayerPrefs.GetInt("SR6_MenuKey", (int)KeyCode.F9);
             _uiOpacity = PlayerPrefs.GetFloat("SR6_Opacity", 0.95f);
             _targetHz = PlayerPrefs.GetInt("SR6_TargetHz", 50); 
@@ -279,7 +280,7 @@ namespace SR6PluginProject
             GUILayout.Label("搜索:", GUILayout.Width(40));
             _searchText = GUILayout.TextField(_searchText);
             GUILayout.EndHorizontal();
-            _pickerScrollPos = GUILayout.BeginScrollView(_pickerScrollPos, GUILayout.Height(250));
+            _pickerScrollPos = GUILayout.BeginScrollView(_pickerScrollPos, GUILayout.Height(250));// 爱来自aoligeas
             foreach (var p in _allSceneParams) { if (p == null) continue; float v = Mathf.Abs(p.Value); if (!_paramMaxMove.ContainsKey(p.name)) _paramMaxMove[p.name] = 0f; if (v > _paramMaxMove[p.name]) _paramMaxMove[p.name] = v; }
             var sortedParams = _allSceneParams.Where(p => p != null && (string.IsNullOrEmpty(_searchText) || p.name.ToLower().Contains(_searchText.ToLower()))).OrderByDescending(p => _paramMaxMove.ContainsKey(p.name) ? _paramMaxMove[p.name] : 0).ToList();
             foreach (var p in sortedParams)
