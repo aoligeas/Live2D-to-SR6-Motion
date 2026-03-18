@@ -1,0 +1,2 @@
+User-agent: *
+Disallow: /喜欢这个插件的话/
