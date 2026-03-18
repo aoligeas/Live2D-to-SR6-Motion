@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SR6PluginProject
 {
-    [BepInPlugin("com.gohyrt.sr6.live2d", "Live2D to SR6 Motion", "1.1.0")]
+    [BepInPlugin("com.gohyrt.sr6.live2d", "Live2D to SR6 Motion", "1.2.0")]
     public class SR6Plugin : BaseUnityPlugin
     {
         [Serializable]
@@ -59,6 +59,34 @@ namespace SR6PluginProject
         private int _targetHz = 50, _displayHz = 0, _actualSendCount = 0;
         private float _globalSmooth = 0.25f, _counterTimer = 0f, _lastSendTime = 0f;
         private bool _isRangeLocked = true;
+        private void RenameTemplate()
+        {
+            string oldName = _templateNames[_selectedTemplateIndex];
+            string newName = _newTemplateName.Trim();
+            if (string.IsNullOrEmpty(newName) || _templateNames.Contains(newName)) return;
+            SaveCurrentTemplate();
+            _templateNames[_selectedTemplateIndex] = newName;
+            SaveCurrentTemplate();
+            SaveTemplateList();
+            DeleteOldTemplateData(oldName);
+            Logger.LogInfo($"场景已更名: {oldName} -> {newName}");
+        }
+
+        private void DeleteOldTemplateData(string oldName)
+        {
+            string pre = "SR6_U_" + oldName;
+            PlayerPrefs.DeleteKey(pre + "_Hz");
+            foreach (var a in _axisList)
+            {
+                PlayerPrefs.DeleteKey(pre + a.TCodeKey + "_N");
+                PlayerPrefs.DeleteKey(pre + a.TCodeKey + "_M");
+                PlayerPrefs.DeleteKey(pre + a.TCodeKey + "_O");
+                PlayerPrefs.DeleteKey(pre + a.TCodeKey + "_I");
+                PlayerPrefs.DeleteKey(pre + a.TCodeKey + "_Min");
+                PlayerPrefs.DeleteKey(pre + a.TCodeKey + "_Max");
+            }
+        }
+
 
         void Awake()
         {
@@ -232,6 +260,7 @@ namespace SR6PluginProject
             GUILayout.BeginHorizontal();
             _newTemplateName = GUILayout.TextField(_newTemplateName, GUILayout.ExpandWidth(true));
             if (GUILayout.Button("新建", GUILayout.Width(45))) CreateNewTemplate();
+            if (GUILayout.Button("改名", GUILayout.Width(45))) RenameTemplate();
             if (GUILayout.Button("重置", GUILayout.Width(45))) ResetCurrentTemplate();
             if (GUILayout.Button("<color=red>删除</color>", GUILayout.Width(35))) DeleteTemplate();
             GUILayout.EndHorizontal();
@@ -362,7 +391,33 @@ namespace SR6PluginProject
             GUILayout.EndHorizontal(); return r;
         }
 
-        private void ConnectSerial() { try { if (_serialPort != null && _serialPort.IsOpen) _serialPort.Close(); else { _serialPort = new SerialPort(_comPort, 115200); _serialPort.Open(); } } catch { } }
+        private void ConnectSerial()
+        {
+            try
+            {
+                if (_serialPort != null && _serialPort.IsOpen)
+                {
+                    _serialPort.Close();
+                    _serialPort = null; 
+                    Logger.LogInfo("SR6 串口已手动断开");
+                }
+                else
+                {
+                    _serialPort = new SerialPort(_comPort, 115200);
+                    _serialPort.ReadTimeout = 10;
+                    _serialPort.WriteTimeout = 10;
+                    _serialPort.DtrEnable = true;
+                    _serialPort.Open();
+                    Logger.LogInfo($"已连接至 {_comPort}");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"串口操作失败: {e.Message}");
+                _serialPort = null; 
+            }
+        }
+
         private void ResetRanges() { foreach (var a in _axisList) { a.Min = 0f; a.Max = 0.1f; a.MinStr = "0"; a.MaxStr = "0.1"; } }
         private void MoveTemplate(int idx, int dir) { int target = idx + dir; if (target < 0 || target >= _templateNames.Count) return; string t = _templateNames[idx]; _templateNames[idx] = _templateNames[target]; _templateNames[target] = t; if (_selectedTemplateIndex == idx) _selectedTemplateIndex = target; else if (_selectedTemplateIndex == target) _selectedTemplateIndex = idx; SaveTemplateList(); }
         private void CreateNewTemplate() { if (!_templateNames.Contains(_newTemplateName)) { _templateNames.Add(_newTemplateName); _selectedTemplateIndex = _templateNames.Count - 1; SaveTemplateList(); SaveCurrentTemplate(); ScanModel(); } }
