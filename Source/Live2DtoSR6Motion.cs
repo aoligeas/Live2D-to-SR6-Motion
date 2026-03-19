@@ -15,7 +15,7 @@ namespace SR6PluginProject
         public class AxisConfig
         {
             public string DisplayLabel; public string TCodeKey;
-            public string Name = "未绑定";
+            public string Name = "Unbound";
             public float Min = 0f, Max = 1f;
             public float Multiplier = 1.0f, Offset = 0.5f;
             public bool Invert = false;
@@ -42,18 +42,19 @@ namespace SR6PluginProject
         private Color _greenNeon = new Color(0f, 1f, 0f);
         private Texture2D _pinkTex, _darkTex, _neonTex;
 
-        private List<string> _templateNames = new List<string>() { "默认模板" };
+        private List<string> _templateNames = new List<string>() { "Default Template" };
         private int _selectedTemplateIndex = 0;
-        private string _newTemplateName = "新场景名称";
+        private string _newTemplateName = "New Scene Name";
         private Dictionary<string, float> _paramMaxMove = new Dictionary<string, float>();
         private KeyCode _menuKey = KeyCode.F9;
         private List<CubismParameter> _allSceneParams = new List<CubismParameter>();
         private string _searchText = "";
 
-        private List<AxisConfig> _axisList = new List<AxisConfig>() {
-            new AxisConfig("上下 L0", "L0"), new AxisConfig("倾斜 R1", "R1"),
-            new AxisConfig("前后 L1", "L1"), new AxisConfig("左右 L2", "L2"),
-            new AxisConfig("旋转 R0", "R0"), new AxisConfig("俯仰 R2", "R2")
+        private List<AxisConfig> _axisList = new List<AxisConfig>()
+        {
+            new AxisConfig("L0", "L0"), new AxisConfig("R1", "R1"),
+            new AxisConfig("L1", "L1"), new AxisConfig("L2", "L2"),
+            new AxisConfig("R0", "R0"), new AxisConfig("R2", "R2")
         };
 
         private int _targetHz = 50, _displayHz = 0, _actualSendCount = 0;
@@ -69,7 +70,7 @@ namespace SR6PluginProject
             SaveCurrentTemplate();
             SaveTemplateList();
             DeleteOldTemplateData(oldName);
-            Logger.LogInfo($"场景已更名: {oldName} -> {newName}");
+            Logger.LogInfo($"Scene Renamed: {oldName} -> {newName}");
         }
 
         private void DeleteOldTemplateData(string oldName)
@@ -163,7 +164,7 @@ namespace SR6PluginProject
                 if (param == null) continue;
                 foreach (var axis in _axisList)
                 {
-                    if (axis.Name != "未绑定" && param.name == axis.Name)
+                    if (axis.Name != "Unbound" && param.name == axis.Name)
                     {
                         axis.RawValue = param.Value; axis.IsActive = true;
                         if (!_isRangeLocked) UpdateAxisRange(axis);
@@ -244,7 +245,7 @@ namespace SR6PluginProject
             GUI.skin.box.normal.background = _darkTex;
 
             GUILayout.BeginVertical("box");
-            GUILayout.Label("<color=#FFD1D1><b>场景模板 (启动自动激活)</b></color>");
+            GUILayout.Label("<color=#FFD1D1><b>Scene Template (Auto-activate on Startup)</b></color>");
             for (int i = 0; i < _templateNames.Count; i++)
             {
                 GUILayout.BeginHorizontal();
@@ -259,10 +260,10 @@ namespace SR6PluginProject
             }
             GUILayout.BeginHorizontal();
             _newTemplateName = GUILayout.TextField(_newTemplateName, GUILayout.ExpandWidth(true));
-            if (GUILayout.Button("新建", GUILayout.Width(45))) CreateNewTemplate();
-            if (GUILayout.Button("改名", GUILayout.Width(45))) RenameTemplate();
-            if (GUILayout.Button("重置", GUILayout.Width(45))) ResetCurrentTemplate();
-            if (GUILayout.Button("<color=red>删除</color>", GUILayout.Width(35))) DeleteTemplate();
+            if (GUILayout.Button("Create", GUILayout.Width(60))) CreateNewTemplate();
+            if (GUILayout.Button("Rename", GUILayout.Width(60))) RenameTemplate();
+            if (GUILayout.Button("Reset", GUILayout.Width(45))) ResetCurrentTemplate();
+            if (GUILayout.Button("<color=red>Del</color>", GUILayout.Width(35))) DeleteTemplate();
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
 
@@ -273,22 +274,22 @@ namespace SR6PluginProject
             GUILayout.BeginVertical("box");
             GUILayout.BeginHorizontal();
             _comPort = GUILayout.TextField(_comPort, GUILayout.Width(60));
-            if (GUILayout.Button(_serialPort != null && _serialPort.IsOpen ? "断开" : "连接")) ConnectSerial();
+            if (GUILayout.Button(_serialPort != null && _serialPort.IsOpen ? "Disconnect" : "Connect")) ConnectSerial();
             GUILayout.FlexibleSpace();
 
 
-            if (GUILayout.Button(_isWaitingForKey ? "<color=yellow>请按键...</color>" : $"菜单:[{_menuKey}]", GUILayout.Width(100)))
+            if (GUILayout.Button(_isWaitingForKey ? "<color=yellow>Press any key...</color>" : $"Menu:[{_menuKey}]", GUILayout.Width(100)))
                 _isWaitingForKey = true;
 
-            if (GUILayout.Button(_isWaitingForPauseKey ? "<color=yellow>请按键...</color>" : $"停止:[{_pauseKey}]", GUILayout.Width(100)))
+            if (GUILayout.Button(_isWaitingForPauseKey ? "<color=yellow>Press any key...</color>" : $"Stop:[{_pauseKey}]", GUILayout.Width(100)))
                 _isWaitingForPauseKey = true;
 
             GUILayout.EndHorizontal();
 
-            _uiOpacity = LabelSlider("透明度", _uiOpacity, 0f, 1.0f);
-            _targetHz = (int)LabelSlider($"输出频率: <color=cyan>{_displayHz}Hz</color>", _targetHz, 10, 200);
+            _uiOpacity = LabelSlider("Opacity", _uiOpacity, 0f, 1.0f);
+            _targetHz = (int)LabelSlider($"Rate: <color=cyan>{_displayHz}Hz</color>", _targetHz, 10, 200);
 
-            if (GUILayout.Button("<color=yellow>保存当前全部配置</color>"))
+            if (GUILayout.Button("<color=yellow>Save All Settings</color>"))
             {
                 SaveTemplateList();
                 SaveCurrentTemplate();
@@ -299,10 +300,10 @@ namespace SR6PluginProject
             }
             GUILayout.EndVertical();
 
-            _isRangeLocked = GUILayout.Toggle(_isRangeLocked, _isRangeLocked ? "【映射范围已锁定】" : "【正在自动记录动作范围】", "button", GUILayout.Height(30));
+            _isRangeLocked = GUILayout.Toggle(_isRangeLocked, _isRangeLocked ? "【Mapping Range Locked】" : "【Auto-recording Motion Range...】", "button", GUILayout.Height(30));
 
             _scrollPos = GUILayout.BeginScrollView(_scrollPos);
-            _globalSmooth = LabelSlider("全局平滑", _globalSmooth, 0.05f, 0.8f);
+            _globalSmooth = LabelSlider("Global Smoothing", _globalSmooth, 0.05f, 0.8f);
 
             foreach (var axis in _axisList) DrawAxisBox(axis);
 
@@ -322,7 +323,7 @@ namespace SR6PluginProject
                 cfg.ShowPicker = !cfg.ShowPicker;
                 if (cfg.ShowPicker) { _paramMaxMove.Clear(); ScanModel(); }
             }
-            bool newInvert = GUILayout.Toggle(cfg.Invert, "反转", GUILayout.Width(50));
+            bool newInvert = GUILayout.Toggle(cfg.Invert, "Invert", GUILayout.Width(50));
             if (newInvert != cfg.Invert)
             {
                 cfg.Invert = newInvert;
@@ -341,9 +342,9 @@ namespace SR6PluginProject
                 cfg.MaxStr = GUILayout.TextField(cfg.MaxStr, GUILayout.Width(50)); GUILayout.Label($"(Raw:{cfg.RawValue:F1})", GUILayout.Width(80));
                 if (_isRangeLocked) { float.TryParse(cfg.MinStr, out cfg.Min); float.TryParse(cfg.MaxStr, out cfg.Max); }
                 GUILayout.EndHorizontal();
-                cfg.Multiplier = LabelSlider("倍率", cfg.Multiplier, 0f, 2.0f);
+                cfg.Multiplier = LabelSlider("Multiplier", cfg.Multiplier, 0f, 2.0f);
             }
-            cfg.Offset = LabelSlider(cfg.IsActive ? "偏移" : "调试", cfg.Offset, 0f, 1f);
+            cfg.Offset = LabelSlider(cfg.IsActive ? "Offset" : "Debug", cfg.Offset, 0f, 1f);
 
             DrawNeonHandleBar(cfg.CurrentVal, cfg.IsActive);
 
@@ -364,7 +365,7 @@ namespace SR6PluginProject
         {
             GUILayout.BeginVertical("box");
             GUILayout.BeginHorizontal();
-            GUILayout.Label("搜索:", GUILayout.Width(40));
+            GUILayout.Label("Search:", GUILayout.Width(40));
             _searchText = GUILayout.TextField(_searchText);
             GUILayout.EndHorizontal();
             _pickerScrollPos = GUILayout.BeginScrollView(_pickerScrollPos, GUILayout.Height(250));// 爱来自Gohyrt
@@ -398,8 +399,8 @@ namespace SR6PluginProject
                 if (_serialPort != null && _serialPort.IsOpen)
                 {
                     _serialPort.Close();
-                    _serialPort = null; 
-                    Logger.LogInfo("SR6 串口已手动断开");
+                    _serialPort = null;
+                    Logger.LogInfo("SR6 串口已手动Disconnect");
                 }
                 else
                 {
@@ -408,24 +409,24 @@ namespace SR6PluginProject
                     _serialPort.WriteTimeout = 10;
                     _serialPort.DtrEnable = true;
                     _serialPort.Open();
-                    Logger.LogInfo($"已连接至 {_comPort}");
+                    Logger.LogInfo($"已Connect至 {_comPort}");
                 }
             }
             catch (Exception e)
             {
                 Logger.LogError($"串口操作失败: {e.Message}");
-                _serialPort = null; 
+                _serialPort = null;
             }
         }
 
         private void ResetRanges() { foreach (var a in _axisList) { a.Min = 0f; a.Max = 0.1f; a.MinStr = "0"; a.MaxStr = "0.1"; } }
         private void MoveTemplate(int idx, int dir) { int target = idx + dir; if (target < 0 || target >= _templateNames.Count) return; string t = _templateNames[idx]; _templateNames[idx] = _templateNames[target]; _templateNames[target] = t; if (_selectedTemplateIndex == idx) _selectedTemplateIndex = target; else if (_selectedTemplateIndex == target) _selectedTemplateIndex = idx; SaveTemplateList(); }
         private void CreateNewTemplate() { if (!_templateNames.Contains(_newTemplateName)) { _templateNames.Add(_newTemplateName); _selectedTemplateIndex = _templateNames.Count - 1; SaveTemplateList(); SaveCurrentTemplate(); ScanModel(); } }
-        private void ResetCurrentTemplate() { foreach (var a in _axisList) { a.Name = "未绑定"; a.Multiplier = 1.0f; a.Offset = 0.5f; a.Invert = false; a.Min = 0f; a.Max = 1f; a.MinStr = "0"; a.MaxStr = "1"; } _globalSmooth = 0.25f; _isRangeLocked = true; }
+        private void ResetCurrentTemplate() { foreach (var a in _axisList) { a.Name = "Unbound"; a.Multiplier = 1.0f; a.Offset = 0.5f; a.Invert = false; a.Min = 0f; a.Max = 1f; a.MinStr = "0"; a.MaxStr = "1"; } _globalSmooth = 0.25f; _isRangeLocked = true; }
         private void DeleteTemplate() { if (_templateNames.Count <= 1) return; _templateNames.RemoveAt(_selectedTemplateIndex); _selectedTemplateIndex = 0; SaveTemplateList(); LoadCurrentTemplate(); }
         private void SaveTemplateList() => PlayerPrefs.SetString("SR6_TempList", string.Join("|", _templateNames.ToArray()));
-        private void LoadTemplateList() { string l = PlayerPrefs.GetString("SR6_TempList", "默认模板"); _templateNames = new List<string>(l.Split('|')); }
+        private void LoadTemplateList() { string l = PlayerPrefs.GetString("SR6_TempList", "Default Template"); _templateNames = new List<string>(l.Split('|')); }
         private void SaveCurrentTemplate() { string pre = "SR6_T_" + _templateNames[_selectedTemplateIndex]; PlayerPrefs.SetString("SR6_LastCOM", _comPort); foreach (var a in _axisList) { PlayerPrefs.SetString(pre + a.TCodeKey + "_N", a.Name); PlayerPrefs.SetFloat(pre + a.TCodeKey + "_M", a.Multiplier); PlayerPrefs.SetFloat(pre + a.TCodeKey + "_O", a.Offset); PlayerPrefs.SetInt(pre + a.TCodeKey + "_I", a.Invert ? 1 : 0); PlayerPrefs.SetFloat(pre + a.TCodeKey + "_Min", a.Min); PlayerPrefs.SetFloat(pre + a.TCodeKey + "_Max", a.Max); } PlayerPrefs.Save(); }
-        private void LoadCurrentTemplate() { string pre = "SR6_T_" + _templateNames[_selectedTemplateIndex]; _comPort = PlayerPrefs.GetString("SR6_LastCOM", "COM4"); foreach (var a in _axisList) { a.Name = PlayerPrefs.GetString(pre + a.TCodeKey + "_N", "未绑定"); a.Multiplier = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_M", 1.0f); a.Offset = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_O", 0.5f); a.Invert = PlayerPrefs.GetInt(pre + a.TCodeKey + "_I", 0) == 1; a.Min = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_Min", 0f); a.Max = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_Max", 1f); a.MinStr = a.Min.ToString("F1"); a.MaxStr = a.Max.ToString("F1"); } }
+        private void LoadCurrentTemplate() { string pre = "SR6_T_" + _templateNames[_selectedTemplateIndex]; _comPort = PlayerPrefs.GetString("SR6_LastCOM", "COM4"); foreach (var a in _axisList) { a.Name = PlayerPrefs.GetString(pre + a.TCodeKey + "_N", "Unbound"); a.Multiplier = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_M", 1.0f); a.Offset = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_O", 0.5f); a.Invert = PlayerPrefs.GetInt(pre + a.TCodeKey + "_I", 0) == 1; a.Min = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_Min", 0f); a.Max = PlayerPrefs.GetFloat(pre + a.TCodeKey + "_Max", 1f); a.MinStr = a.Min.ToString("F1"); a.MaxStr = a.Max.ToString("F1"); } }
     }
 }
