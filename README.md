@@ -23,9 +23,6 @@
 
 #### **Comfortable UI**
 *    Made with ❤️
----
-
-> **Note:** Currently only supports Mono-backend games developed with the standard Cubism SDK.
 
 
 
